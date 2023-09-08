@@ -26,15 +26,15 @@ use xcm_executor::traits::Convert;
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
 
 // Accounts
-pub const ADMIN: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0u8; 32]);
-pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([1u8; 32]);
-pub const BOB: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([2u8; 32]);
+pub const ADMIN: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([99u8; 32]);
+pub const ALICE: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([111u8; 32]);
+pub const BOB: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([222u8; 32]);
 
 // Balances
 pub type Balance = u128;
 pub const UNITS: Balance = 10_000_000_000;
 pub const CENTS: Balance = UNITS / 100; // 100_000_000
-pub const INITIAL_BALANCE: u128 = 10 * UNITS;
+pub const INITIAL_BALANCE: u128 = 1000 * UNITS;
 
 decl_test_parachain! {
     pub struct ParaA {
@@ -274,6 +274,8 @@ pub fn print_para_events() {
     System::events()
         .iter()
         .for_each(|r| println!(">>> {:?}", r.event));
+
+    System::reset_events();
 }
 
 pub fn print_relay_events() {
@@ -281,6 +283,8 @@ pub fn print_relay_events() {
     System::events()
         .iter()
         .for_each(|r| println!(">>> {:?}", r.event));
+
+    System::reset_events();
 }
 
 pub fn relay_successful_execution() -> bool {

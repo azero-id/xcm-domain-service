@@ -1,4 +1,4 @@
 mod testnet_config;
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;

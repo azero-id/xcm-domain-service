@@ -38,7 +38,7 @@ sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
 
 [dev-dependencies]
-sp-trie = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
+pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42" }
 tracing = { version = "0.1.37" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter", "tracing-log"] }
 

@@ -467,7 +467,7 @@ impl pallet_contracts::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 
-	type CallFilter = frame_support::traits::Nothing;
+	type CallFilter = frame_support::traits::Everything;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
     type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
 	type ChainExtension = ();
@@ -479,7 +479,7 @@ impl pallet_contracts::Config for Runtime {
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 	type MaxCodeLen = ConstU32<{ 32 * 1024 }>;
 	type MaxStorageKeyLen = ConstU32<128>;
-    type UnsafeUnstableInterface = sp_core::ConstBool<false>;
+    type UnsafeUnstableInterface = sp_core::ConstBool<true>;
     type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
 }
 
@@ -492,15 +492,15 @@ construct_runtime!(
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-        RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
-        Timestamp: pallet_timestamp,
-        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-        TransactionPayment: pallet_transaction_payment,
-        MsgQueue: mock_msg_queue::{Pallet, Storage, Event<T>},
-        PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
-        Assets: pallet_assets,
-        ForeignUniques: pallet_uniques,
-        Contracts: pallet_contracts,
+        System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
+        RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip = 1,
+        Timestamp: pallet_timestamp = 3,
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
+        TransactionPayment: pallet_transaction_payment = 32,
+        MsgQueue: mock_msg_queue::{Pallet, Storage, Event<T>} = 100,
+        PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 99,
+        Assets: pallet_assets = 6,
+        ForeignUniques: pallet_uniques = 7,
+        Contracts: pallet_contracts = 70,
     }
 );

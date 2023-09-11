@@ -1,4 +1,8 @@
+use crate::call_encodings::*;
 use crate::Weight;
+use ink::prelude::{boxed::Box, vec, vec::Vec};
+use ink::primitives::AccountId;
+use xcm::v3::prelude::*;
 
 const WEIGHT_PER_INSTRUCTION: Weight = Weight::from_parts(1_000, 1_000);
 const WEIGHT_REF_TIME_PER_SECOND: u64 = 1_000_000_000_000;
@@ -18,4 +22,44 @@ pub fn estimate_weight(number_of_instructions: u64) -> Weight {
 pub fn estimate_fee_for_weight(weight: Weight) -> u128 {
     UNITS_PER_SECOND * (weight.ref_time() as u128) / (WEIGHT_REF_TIME_PER_SECOND as u128)
         + UNITS_PER_MB * (weight.proof_size() as u128) / (WEIGHT_PROOF_SIZE_PER_MB as u128)
+}
+
+pub fn make_xcm_contract_call<C: ink::env::ContractEnv>(
+    path_to_chain: xcm::VersionedMultiLocation,
+    contract_address: AccountId,
+    payload: Vec<u8>,
+    value: u128,
+    gas_limit: Option<Weight>,
+) -> Result<(), ink::env::Error> {
+    let gas_limit = gas_limit.unwrap_or(Weight::from_all(10_000_000_000));
+    let est_wt = estimate_weight(4) + gas_limit * 2;
+    let fee = estimate_fee_for_weight(est_wt);
+
+    let contract_call = RuntimeCall::Contracts(ContractsCall::Call {
+        dest: contract_address,
+        value,
+        gas_limit,
+        storage_deposit_limit: None,
+        data: payload,
+    });
+
+    let message: Xcm<()> = Xcm(vec![
+        WithdrawAsset(vec![(Parent, fee).into()].into()),
+        BuyExecution {
+            fees: (Parent, fee).into(),
+            weight_limit: WeightLimit::Unlimited,
+        },
+        Transact {
+            origin_kind: OriginKind::SovereignAccount,
+            require_weight_at_most: gas_limit * 2,
+            call: scale::Encode::encode(&contract_call).into(),
+        },
+    ]);
+
+    let xcm_call = RuntimeCall::Xcm(XcmCall::Send {
+        dest: Box::new(path_to_chain),
+        message: Box::new(xcm::VersionedXcm::V3(message)),
+    });
+
+    ink::env::call_runtime::<C::Env, _>(&xcm_call)
 }

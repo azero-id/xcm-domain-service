@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ink = { version = "4.3.0", default-features = false }
+ink = { version = "4.3.0", default-features = false, features = ["call-runtime"] }
 xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.42" }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }

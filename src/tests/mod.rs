@@ -8,7 +8,7 @@ use std::sync::Once;
 pub use xcm::v3::prelude::*;
 pub use xcm_simulator::TestExt;
 
-pub const TX_GAS: u64 = 10_000_000_000;
+pub const TX_GAS: u64 = 100_000_000_000;
 
 mod who_am_i;
 

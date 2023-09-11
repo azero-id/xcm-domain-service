@@ -121,3 +121,64 @@ fn understand_who_am_i() {
     let alice_b_on_a = sibling_account_sovereign_account_id(2, ALICE);
     verify_contract_state(&contract, 3, Some(alice_b_on_a));
 }
+
+#[test]
+fn test_xc_walk_in() {
+    // super::init_tracing();
+    MockNet::reset();
+
+    // 0a. Deploy who_am_i contract
+    let contract = ParaA::execute_with(|| {
+        let blob =
+            std::fs::read("./target/ink/who_am_i/who_am_i.wasm").expect("cound not find wasm blob");
+
+        let sel_constructor = Bytes::from_str("0x9bae9d5e")
+            .map(|v| v.to_vec())
+            .expect("unable to parse hex string");
+
+        deploy_contract(blob, sel_constructor, ALICE)
+    });
+    verify_contract_state(&contract, 0, None);
+
+    // 0b. Deploy xc_who_am_i contract
+    let xc_contract = ParaB::execute_with(|| {
+        let blob = std::fs::read("./target/ink/xc_who_am_i/xc_who_am_i.wasm")
+            .expect("cound not find wasm blob");
+
+        let mut sel_constructor = Bytes::from_str("0x9bae9d5e")
+            .map(|v| v.to_vec())
+            .expect("unable to parse hex string");
+        sel_constructor.append(&mut contract.encode());
+
+        deploy_contract(blob, sel_constructor, ALICE)
+    });
+
+    // 1. Fund xc_contract for ParaA gas
+    let sovereign_xc_contract_addr = sibling_account_sovereign_account_id(2, xc_contract.clone());
+
+    ParaA::execute_with(|| {
+        assert_ok!(ParachainBalances::force_set_balance(
+            parachain::RuntimeOrigin::root(),
+            sovereign_xc_contract_addr.clone(),
+            INITIAL_BALANCE,
+        ));
+
+        assert_ok!(ParachainAssets::mint(
+            parachain::RuntimeOrigin::signed(ADMIN),
+            0,
+            sovereign_xc_contract_addr.clone(),
+            INITIAL_BALANCE
+        ));
+    });
+
+    let sel_walk_in = Bytes::from_str("0xc0397d90")
+        .map(|v| v.to_vec())
+        .expect("unable to parse hex string");
+
+    ParaB::execute_with(|| {
+        let data = call_contract(&xc_contract, ALICE, sel_walk_in, 0);
+        assert_eq!(data, [0]);
+    });
+
+    verify_contract_state(&contract, 1, Some(sovereign_xc_contract_addr));
+}

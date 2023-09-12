@@ -46,9 +46,11 @@ fn understand_who_am_i() {
         let blob =
             std::fs::read("./target/ink/who_am_i/who_am_i.wasm").expect("cound not find wasm blob");
 
-        let sel_constructor = Bytes::from_str("0x9bae9d5e")
+        let mut sel_constructor = Bytes::from_str("0x9bae9d5e")
             .map(|v| v.to_vec())
             .expect("unable to parse hex string");
+        sel_constructor.append(&mut ALICE.encode());
+        sel_constructor.append(&mut ALICE.encode());
 
         deploy_contract(blob, sel_constructor, ALICE)
     });
@@ -132,9 +134,11 @@ fn test_xc_walk_in() {
         let blob =
             std::fs::read("./target/ink/who_am_i/who_am_i.wasm").expect("cound not find wasm blob");
 
-        let sel_constructor = Bytes::from_str("0x9bae9d5e")
+        let mut sel_constructor = Bytes::from_str("0x9bae9d5e")
             .map(|v| v.to_vec())
             .expect("unable to parse hex string");
+        sel_constructor.append(&mut ALICE.encode());
+        sel_constructor.append(&mut ALICE.encode());
 
         deploy_contract(blob, sel_constructor, ALICE)
     });

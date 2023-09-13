@@ -136,6 +136,8 @@ mod handler_who_am_i {
             let (path_to_chain, contract_address) = Self::resolve_location(location)?;
 
             let selector = ink::selector_bytes!("accept_response");
+            let read_interface: ink::prelude::vec::Vec<u8> = read_interface.encode();
+
             make_xcm_contract_call::<Self>(
                 path_to_chain.into(),
                 contract_address,

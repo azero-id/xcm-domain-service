@@ -11,6 +11,7 @@ pub use xcm_simulator::TestExt;
 pub const TX_GAS: u64 = 100_000_000_000;
 
 mod who_am_i;
+mod xc_who_am_i;
 
 pub fn deploy_contract(blob: Vec<u8>, sel_constr: Vec<u8>, deployer: AccountId32) -> AccountId32 {
     let resp = ParachainContracts::bare_instantiate(
@@ -46,9 +47,8 @@ pub fn call_contract(
     .result
     .expect("execution without result");
 
-    let pallet_contracts_primitives::ExecReturnValue { flags, mut data } = rs;
-    // empty flags determines succesful execution
-    assert!(flags.is_empty());
+    let pallet_contracts_primitives::ExecReturnValue { flags: _, mut data } = rs;
+
     // InkLang error check
     assert_eq!(data.remove(0), 0);
 

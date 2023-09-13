@@ -1,6 +1,6 @@
 use super::*;
 
-fn verify_contract_state(contract: &AccountId32, id: u128, user: Option<AccountId32>) {
+pub fn verify_contract_state(contract: &AccountId32, id: u128, user: Option<AccountId32>) {
     let get_counter = || {
         let sel_counter = Bytes::from_str("0x94fc951c")
             .map(|v| v.to_vec())
@@ -153,6 +153,7 @@ fn test_xc_walk_in() {
             .map(|v| v.to_vec())
             .expect("unable to parse hex string");
         sel_constructor.append(&mut contract.encode());
+        sel_constructor.append(&mut ALICE.encode());    // Dummy value; callback not used
 
         deploy_contract(blob, sel_constructor, ALICE)
     });

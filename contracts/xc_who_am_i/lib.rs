@@ -71,9 +71,16 @@ mod xc_who_am_i {
         }
 
         #[ink(message)]
+        pub fn total_tickets_issued(&self) -> u128 {
+            self.ticket_counter
+        }
+
+        #[ink(message)]
         pub fn walk_in(&mut self) -> Result<(), Error> {
             let selector = ink::selector_bytes!("walk_in");
-            self.call_handler(selector.encode())
+            let caller = self.env().caller();
+
+            self.call_handler((selector, caller).encode())
         }
 
         #[ink(message)]

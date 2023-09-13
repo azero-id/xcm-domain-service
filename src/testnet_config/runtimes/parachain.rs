@@ -477,7 +477,7 @@ impl pallet_contracts::Config for Runtime {
     type DefaultDepositLimit = ConstU128<{ u128::MAX }>;
     type DepositPerItem = DepositPerItem;
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
-	type MaxCodeLen = ConstU32<{ 32 * 1024 }>;
+	type MaxCodeLen = ConstU32<{ 64 * 1024 }>;
 	type MaxStorageKeyLen = ConstU32<128>;
     type UnsafeUnstableInterface = sp_core::ConstBool<true>;
     type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;

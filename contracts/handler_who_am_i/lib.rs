@@ -86,9 +86,13 @@ mod handler_who_am_i {
 
         // @note does not forward the output back to origin
         #[ink(message)]
-        pub fn walk_in(&mut self) -> Result<(u128, AccountId), Error> {
-            let (caller, _) = self.auth_caller()?;
-            self.who_am_i.xcm_walk_in(caller).map_err(Error::WhoAmI)
+        pub fn walk_in(&mut self, origin: AccountId) -> Result<(u128, AccountId), Error> {
+            self.auth_caller()?;
+
+            let interchain_account = self.interchain_account(origin);
+            self.who_am_i
+                .xcm_walk_in(interchain_account)
+                .map_err(Error::WhoAmI)
         }
 
         #[ink(message)]
@@ -147,6 +151,12 @@ mod handler_who_am_i {
             let path_to_chain: MultiLocation = (Parent, Parachain(para_id)).into();
 
             Ok((path_to_chain, contract_addr))
+        }
+
+        // Gives us the control to have our own form of interchain account
+        // Ideally should comply w/ the chains' Sovereign Account for consistency
+        fn interchain_account(&self, origin: AccountId) -> AccountId {
+            origin // Alias Mode ON
         }
 
         fn auth_caller(&self) -> Result<(AccountId, Location), Error> {

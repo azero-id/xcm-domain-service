@@ -16,8 +16,8 @@ fn deploy_state_manager() -> AccountId32 {
 }
 
 fn deploy_xcm_handler(state_manager: &AccountId32) -> AccountId32 {
-    let blob =
-        std::fs::read("./target/ink/handler_who_am_i/handler_who_am_i.wasm").expect("cound not find wasm blob");
+    let blob = std::fs::read("./target/ink/handler_who_am_i/handler_who_am_i.wasm")
+        .expect("cound not find wasm blob");
 
     let sel_constructor = encode_selector("0x9bae9d5e");
     let payload = (sel_constructor, ALICE, state_manager).encode(); // (selector, admin, state_manager)
@@ -26,8 +26,8 @@ fn deploy_xcm_handler(state_manager: &AccountId32) -> AccountId32 {
 }
 
 fn deploy_xc_contract(xcm_handler: &AccountId32, xcm_handler_soac: &AccountId32) -> AccountId32 {
-    let blob =
-        std::fs::read("./target/ink/xc_who_am_i/xc_who_am_i.wasm").expect("cound not find wasm blob");
+    let blob = std::fs::read("./target/ink/xc_who_am_i/xc_who_am_i.wasm")
+        .expect("cound not find wasm blob");
 
     let sel_constructor = encode_selector("0x9bae9d5e");
     let payload = (sel_constructor, xcm_handler, xcm_handler_soac).encode(); // (selector, xcm_handler, xcm_handler_sovereign_account)
@@ -45,7 +45,11 @@ fn set_handler(state_manager: &AccountId32, xcm_handler: &AccountId32) {
     assert_eq!(resp, Ok(()));
 }
 
-fn add_xc_contract(xcm_handler: &AccountId32, xc_contract_soac: &AccountId32, location: &(u32, AccountId32)) {
+fn add_xc_contract(
+    xcm_handler: &AccountId32,
+    xc_contract_soac: &AccountId32,
+    location: &(u32, AccountId32),
+) {
     let sel_add_xc_contract = encode_selector("0x5578fb41");
     let payload = (sel_add_xc_contract, xc_contract_soac, location).encode();
 
@@ -105,3 +109,45 @@ fn setup_works() {
     setup();
 }
 
+#[test]
+fn callback_works() {
+    MockNet::reset();
+
+    let (state_manager, xcm_handler, xc_contract) = setup();
+
+    // 1. Walk-in (via xc-contract on ParaB)
+    ParaB::execute_with(|| {
+        let sel_walk_in = encode_selector("0xc0397d90");
+        let data = call_contract(&xc_contract, BOB, sel_walk_in.encode(), 0);
+        let rs: Result<(), u8> = Decode::decode(&mut &data[..]).expect("failed to decode");
+
+        assert_eq!(rs, Ok(()));
+    });
+
+    // Verify data stored in the state_manager
+    crate::tests::who_am_i::verify_contract_state(&state_manager, 1, Some(BOB));
+
+    // 2. Request data for `who_am_i(id)` on ParaB
+    let id: u128 = 1;
+    let tid_0 = ParaB::execute_with(|| {
+        let sel_who_am_i = encode_selector("0x8fb9cb05");
+        let payload = (sel_who_am_i, id).encode();
+
+        let data = call_contract(&xc_contract, ALICE, payload, 0);
+        let rs: Result<u128, u8> = Decode::decode(&mut &data[..]).expect("failed to decode");
+        rs.unwrap()
+    });
+    assert_eq!(tid_0, 0);
+
+    // 3. Retrieve data on ParaB
+    let who_am_i = ParaB::execute_with(|| {
+        let sel_retrieve_who_am_i = encode_selector("0xafc817a8");
+        let payload = (sel_retrieve_who_am_i, tid_0).encode();
+
+        let data = call_contract(&xc_contract, ALICE, payload, 0);
+        let rs: Result<Option<AccountId32>, u8> =
+            Decode::decode(&mut &data[..]).expect("failed to decode");
+        rs
+    });
+    assert_eq!(who_am_i, Ok(Some(BOB)));
+}

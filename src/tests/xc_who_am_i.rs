@@ -139,6 +139,20 @@ fn callback_works() {
     });
     assert_eq!(tid_0, 0);
 
+    // TmpCall { Not Intended }. Manual callback from xcm-handler (ParaA)
+    ParaA::execute_with(|| {
+        let force_who_am_i = encode_selector("0x463827b6");
+        let xc_contract_soac = sibling_account_sovereign_account_id(2, xc_contract.clone());
+
+        let payload = (force_who_am_i, xc_contract_soac, tid_0, id).encode();
+
+        let data = call_contract(&xcm_handler, ALICE, payload, 0);
+        let rs: Result<Option<AccountId32>, u8> =
+            Decode::decode(&mut &data[..]).expect("failed to decode");
+
+        assert_eq!(rs, Ok(Some(BOB)));
+    });
+
     // 3. Retrieve data on ParaB
     let who_am_i = ParaB::execute_with(|| {
         let sel_retrieve_who_am_i = encode_selector("0xafc817a8");

@@ -128,6 +128,25 @@ mod handler_who_am_i {
             Ok(output)
         }
 
+        // For debugging purpose
+        #[ink(message)]
+        pub fn force_who_am_i(
+            &mut self,
+            caller: AccountId,
+            tid: TicketId,
+            id: u128,
+        ) -> Result<Option<AccountId>, Error> {
+            let Some(location) = self.xc_contracts.get(caller) else {
+                Err(Error::UnknownCaller)?
+            };
+
+            let output = self.who_am_i.who_am_i(id);
+            let read_interface = ReadInterface::WhoAmI(output);
+            Self::send_response_back(location, tid, read_interface)?;
+
+            Ok(output)
+        }
+
         fn send_response_back(
             location: Location,
             tid: TicketId,

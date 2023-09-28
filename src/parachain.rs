@@ -511,11 +511,11 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		MsgQueue: mock_msg_queue::{Pallet, Storage, Event<T>},
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
+		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 99,
 		ForeignUniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		Timestamp: pallet_timestamp,
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 		TransactionPayment: pallet_transaction_payment,
-		Contracts: pallet_contracts,
+		Contracts: pallet_contracts = 70,
 	}
 );

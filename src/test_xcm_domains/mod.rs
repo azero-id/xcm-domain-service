@@ -9,6 +9,8 @@ use std::sync::Once;
 pub use xcm::v3::prelude::*;
 pub use xcm_simulator::TestExt;
 
+mod setup;
+
 pub const TX_GAS: u64 = 10_000_000_000;
 
 pub fn get_selector(name: &str) -> [u8; 4] {

@@ -485,12 +485,12 @@ impl pallet_contracts::Config for Runtime {
     type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
 	type ChainExtension = ();
     type Schedule = Schedule;
-    type CallStack = [pallet_contracts::Frame<Self>; 8];
+    type CallStack = [pallet_contracts::Frame<Self>; 7];
     type DepositPerByte = DepositPerByte;
     type DefaultDepositLimit = sp_core::ConstU128<{ u128::MAX }>;
     type DepositPerItem = DepositPerItem;
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
-	type MaxCodeLen = ConstU32<{ 64 * 1024 }>;
+	type MaxCodeLen = ConstU32<{ 90 * 1024 }>;
 	type MaxStorageKeyLen = ConstU32<128>;
     type UnsafeUnstableInterface = sp_core::ConstBool<true>;
     type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;

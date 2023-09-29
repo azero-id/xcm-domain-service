@@ -108,7 +108,7 @@ mod xc_domain_service {
         /** Getters request fulfill STARTS here */
 
         #[ink(message)]
-        pub fn retrieve_get_owner(&self, tid: TicketId) -> Result<Option<AccountId>, Error> {
+        pub fn retrieve_owner(&self, tid: TicketId) -> Result<Option<AccountId>, Error> {
             match self.read_response(tid)? {
                 ReadInterface::Owner(rs) => Ok(rs),
                 _ => Err(Error::TicketIdMismatch),
@@ -116,7 +116,7 @@ mod xc_domain_service {
         }
 
         #[ink(message)]
-        pub fn retrieve_get_address(
+        pub fn retrieve_address(
             &self,
             tid: TicketId,
         ) -> Result<Option<xcm::VersionedMultiLocation>, Error> {

@@ -11,6 +11,7 @@ pub use xcm_simulator::TestExt;
 
 mod native_dns;
 mod setup;
+mod xcm_dns;
 
 pub const TX_GAS: u64 = 10_000_000_000;
 

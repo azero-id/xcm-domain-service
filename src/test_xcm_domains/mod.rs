@@ -9,6 +9,7 @@ use std::sync::Once;
 pub use xcm::v3::prelude::*;
 pub use xcm_simulator::TestExt;
 
+mod native_dns;
 mod setup;
 
 pub const TX_GAS: u64 = 10_000_000_000;

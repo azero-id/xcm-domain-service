@@ -17,6 +17,9 @@
 mod parachain;
 mod relay_chain;
 
+#[cfg(test)]
+mod test_xcm_domains;
+
 use sp_runtime::BuildStorage;
 use sp_tracing;
 use xcm::prelude::*;
@@ -82,7 +85,7 @@ pub fn child_account_account_id(para: u32, who: sp_runtime::AccountId32) -> rela
 }
 
 pub fn sibling_account_account_id(para: u32, who: sp_runtime::AccountId32) -> parachain::AccountId {
-	let location = (Parent, Parachain(para), AccountId32 { network: None, id: who.into() });
+	let location = (Parent, Parachain(para), AccountId32 { network: Some(Kusama), id: who.into() });
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
 }
 
@@ -137,6 +140,8 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 
 pub type RelayChainPalletXcm = pallet_xcm::Pallet<relay_chain::Runtime>;
 pub type ParachainPalletXcm = pallet_xcm::Pallet<parachain::Runtime>;
+pub type ParachainContracts = pallet_contracts::Pallet<parachain::Runtime>;
+pub type ParachainBalances = pallet_balances::Pallet<parachain::Runtime>;
 
 #[cfg(test)]
 mod tests {

@@ -3,4 +3,5 @@ members = [
     "utils",
     "domain_service",
     "xc_domain_service",
+    "xcm_handler",
 ]

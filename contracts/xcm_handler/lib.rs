@@ -29,6 +29,8 @@ mod xcm_handler {
         CallRuntimeFailed,
         InkEnvError,
         DomainService(u8),
+        UnsupportedXcmVersion,
+        ReanchoringFailed,
     }
 
     impl From<ink::env::Error> for Error {
@@ -208,13 +210,21 @@ mod xcm_handler {
             Ok((path_to_chain, contract_addr))
         }
 
-        // @todo: Implementation pending
         fn reanchor_loc(
             &self,
             loc: &VersionedMultiLocation,
             relative_to: &MultilocationEncoded,
         ) -> Result<VersionedMultiLocation, Error> {
-            Ok(loc.clone())
+            let (target, _) = Self::resolve_location(relative_to)?;
+
+            let Ok(mut loc): Result<MultiLocation, _> = loc.clone().try_into() else {
+                return Err(Error::UnsupportedXcmVersion);
+            };
+
+            loc.reanchor(&target, Here)
+                .map_err(|_| Error::ReanchoringFailed)?;
+
+            Ok(loc.into())
         }
 
         // Gives us the control to have our own form of interchain account

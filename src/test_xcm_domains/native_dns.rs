@@ -29,7 +29,7 @@ pub fn set_address(
     state_manager: &AccountId32,
     caller: AccountId32,
     name: &str,
-    address: &(u8, u32, AccountId32),
+    address: &(u8, Option<u32>, AccountId32),
 ) -> Result<(), u8> {
     let sel_set_address = get_selector("set_address");
     let payload = (sel_set_address, name, address).encode();
@@ -84,9 +84,7 @@ fn set_address_works() {
         register_name(&state_manager, ALICE, "alice").unwrap();
 
         // Set domain's resolving MultiLocation address
-
-        // FIXME: It should point to (Here, ALICE) not (Here, Parachain(1), ALICE)
-        let address = (0, 1, ALICE);
+        let address = (0, None, ALICE);
         let rs = set_address(&state_manager, ALICE, "alice", &address);
         assert_eq!(rs, Ok(()));
 
@@ -95,7 +93,7 @@ fn set_address_works() {
             network: None,
             id: ALICE.into(),
         };
-        let loc = VersionedMultiLocation::V3((Parachain(1), true_ml).into());
+        let loc = VersionedMultiLocation::V3(true_ml.into());
 
         let rs = get_address(&state_manager, "alice");
         assert_eq!(rs, Some(loc));

@@ -10,7 +10,7 @@ mod xcm_handler {
     use xcm::v3::prelude::*;
     use xcm::VersionedMultiLocation;
 
-    pub type MultilocationEncoded = (u8, u32, AccountId); // (Parent, Parachain, AccountId)
+    pub type MultilocationEncoded = (u8, Option<u32>, AccountId); // (Parent, Option<Parachain>, AccountId)
     pub type ReadInterfaceEncoded = Vec<u8>;
     pub type TicketId = u128;
 
@@ -127,7 +127,6 @@ mod xcm_handler {
 
             let output = self.domain_service.get_address(name);
 
-            // @todo: Verify its correctness
             let re_anchored_loc = match &output {
                 Some(rs) => Some(self.reanchor_loc(rs, &origin_path)?),
                 None => None,
@@ -205,7 +204,11 @@ mod xcm_handler {
             location: &MultilocationEncoded,
         ) -> Result<(MultiLocation, AccountId), Error> {
             let &(parents, para_id, contract_addr) = location;
-            let path_to_chain: MultiLocation = MultiLocation::new(parents, Parachain(para_id));
+            let interior = match para_id {
+                Some(id) => X1(Parachain(id)),
+                None => Here,
+            };
+            let path_to_chain: MultiLocation = MultiLocation::new(parents, interior);
 
             Ok((path_to_chain, contract_addr))
         }

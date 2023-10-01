@@ -46,7 +46,7 @@ fn set_handler(state_manager: &AccountId32, xcm_handler: &AccountId32) {
 pub fn add_xc_contract(
     xcm_handler: &AccountId32,
     xc_contract_soac: &AccountId32,
-    origin_path: &(u8, u32, AccountId32),
+    origin_path: &(u8, Option<u32>, AccountId32),
 ) {
     let sel_add_xc_contract = get_selector("add_xc_contract");
     let payload = (sel_add_xc_contract, xc_contract_soac, origin_path).encode(); // (selector, xc_contract_soac, origin_path)
@@ -84,7 +84,7 @@ pub fn setup() -> (AccountId32, AccountId32, AccountId32) {
     println!("xc_contract: {:?}", xc_contract);
 
     // // 3B. Approve xc_contract on xcm_handler
-    let origin_path = (1, 2, xc_contract.clone());
+    let origin_path = (1, Some(2), xc_contract.clone());
     ParaA::execute_with(|| add_xc_contract(&xcm_handler, &xc_contract_soac, &origin_path));
 
     // 4. Fund sovereign accounts for gas fee payment

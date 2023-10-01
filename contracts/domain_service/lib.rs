@@ -6,7 +6,7 @@ mod domain_service {
     use ink::storage::Mapping;
     use xcm::v3::prelude::*;
 
-    pub type MultilocationEncoded = (u8, u32, AccountId); // (Parent, Parachain, AccountId)
+    pub type MultilocationEncoded = (u8, Option<u32>, AccountId); // (Parent, Option<Parachain>, AccountId)
 
     #[derive(scale::Encode, scale::Decode)]
     #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
@@ -50,13 +50,15 @@ mod domain_service {
             self.name_to_multilocation
                 .get(name)
                 .map(|(parent, para_id, addr)| {
-                    let interior = (
-                        Parachain(para_id),
-                        AccountId32 {
-                            network: None, // Is it ok?
-                            id: *addr.as_ref(),
-                        },
-                    );
+                    let account = AccountId32 {
+                        network: None, // Is it ok?
+                        id: *addr.as_ref(),
+                    };
+
+                    let interior = match para_id {
+                        Some(id) => X2(Parachain(id), account),
+                        None => X1(account),
+                    };
                     MultiLocation::new(parent, interior).into()
                 })
         }

@@ -27,7 +27,7 @@ pub fn set_address(
     xc_contract: &AccountId32,
     caller: AccountId32,
     name: &str,
-    address: &(u8, u32, AccountId32),
+    address: &(u8, Option<u32>, AccountId32),
 ) -> Result<(), u8> {
     let sel_set_address = get_selector("set_address");
     let payload = (sel_set_address, name, address).encode();

@@ -21,7 +21,7 @@ mod xc_domain_service {
         Address(Option<xcm::VersionedMultiLocation>),
     }
 
-    pub type MultilocationEncoded = (u8, u32, AccountId); // (Parent, Parachain, AccountId)
+    pub type MultilocationEncoded = (u8, Option<u32>, AccountId); // (Parent, Option<Parachain>, AccountId)
     pub type ReadInterfaceEncoded = Vec<u8>;
     pub type TicketId = u128;
 
@@ -177,7 +177,7 @@ mod xc_domain_service {
             name: String,
             loc: MultilocationEncoded,
         ) -> Result<(), Error> {
-            let selector = ink::selector_bytes!("transfer_name");
+            let selector = ink::selector_bytes!("set_address");
             let caller = self.env().caller();
             let payload = (selector, caller, name, loc).encode();
 

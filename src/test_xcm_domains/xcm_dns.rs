@@ -100,6 +100,52 @@ fn registration_works() {
 }
 
 #[test]
+fn set_address_works() {
+    MockNet::reset();
+    let (state_manager, _, xc_contract) = setup::setup();
+
+    ParaB::execute_with(|| {
+        // Register a name
+        let rs = register_name(&xc_contract, ALICE, "alice");
+        assert_eq!(rs, Ok(()));
+
+        // Set domain's resolving address
+        let address = (0, None, ALICE);
+        let rs = set_address(&xc_contract, ALICE, "alice", &address);
+        assert_eq!(rs, Ok(()));
+
+        // Request for domain's resolving address
+        let rs = get_address(&xc_contract, "alice");
+        assert_eq!(rs, Ok(0)); // tid = 0
+    });
+
+    ParaB::execute_with(|| {
+        let true_ml = Junction::AccountId32 {
+            network: None,
+            id: ALICE.into(),
+        };
+        let loc = VersionedMultiLocation::V3(true_ml.into());
+
+        // Retrieve resolving address from request:0
+        let rs = retrieve_address(&xc_contract, 0);
+        assert_eq!(rs, Ok(Some(loc)));
+    });
+
+    // Verify the state is updated on ParaA::state_manager as well
+    // and the MultiLocation anchoring is working properly
+    ParaA::execute_with(|| {
+        let account = Junction::AccountId32 {
+            network: None,
+            id: ALICE.into(),
+        };
+        let loc = VersionedMultiLocation::V3((Parent, Parachain(2), account).into());
+
+        let rs = native_dns::get_address(&state_manager, "alice");
+        assert_eq!(rs, Some(loc));
+    });
+}
+
+#[test]
 fn transfer_works() {
     MockNet::reset();
     let (state_manager, _, xc_contract) = setup::setup();

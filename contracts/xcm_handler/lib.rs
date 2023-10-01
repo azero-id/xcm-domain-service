@@ -219,12 +219,13 @@ mod xcm_handler {
             relative_to: &MultilocationEncoded,
         ) -> Result<VersionedMultiLocation, Error> {
             let (target, _) = Self::resolve_location(relative_to)?;
+            let context = X1(Parachain(1));
 
             let Ok(mut loc): Result<MultiLocation, _> = loc.clone().try_into() else {
                 return Err(Error::UnsupportedXcmVersion);
             };
 
-            loc.reanchor(&target, Here)
+            loc.reanchor(&target, context)
                 .map_err(|_| Error::ReanchoringFailed)?;
 
             Ok(loc.into())

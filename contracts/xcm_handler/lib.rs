@@ -30,6 +30,7 @@ mod xcm_handler {
         InkEnvError,
         DomainService(u8),
         UnsupportedXcmVersion,
+        UnsupportedMultiLocationFormat,
         ReanchoringFailed,
     }
 
@@ -171,10 +172,11 @@ mod xcm_handler {
             loc: MultilocationEncoded,
         ) -> Result<(), Error> {
             let origin_path = self.auth_caller()?;
-
             let caller_soac = self.interchain_account(&origin_path, &caller);
 
-            // @todo: Re-anchor loc
+            // Re-anchor loc w.r.t our context
+            let loc = self.reanchor_loc2(&loc, &origin_path)?;
+
             self.domain_service
                 .xcm_set_address(caller_soac, name, loc)
                 .map_err(Error::DomainService)
@@ -213,6 +215,7 @@ mod xcm_handler {
             Ok((path_to_chain, contract_addr))
         }
 
+        // Re-anchors from Here (context) to destination chain location (target)
         fn reanchor_loc(
             &self,
             loc: &VersionedMultiLocation,
@@ -229,6 +232,80 @@ mod xcm_handler {
                 .map_err(|_| Error::ReanchoringFailed)?;
 
             Ok(loc.into())
+        }
+
+        // Re-anchors custom-encoded Multilocation coming from secondary chain (context) to Here (target) in custom-encoded format
+        fn reanchor_loc2(
+            &self,
+            loc: &MultilocationEncoded,
+            origin_path: &MultilocationEncoded,
+        ) -> Result<MultilocationEncoded, Error> {
+
+            let get_context = |loc: &MultilocationEncoded| -> InteriorMultiLocation {
+                let &(_, para_id, _) = loc;
+
+                match para_id {
+                    Some(id) => X1(Parachain(id)),
+                    None => Here,
+                }
+            };
+
+            let get_inverted_target = |here: Junctions, origin_path| {
+                let (destination, _) = Self::resolve_location(origin_path)?;
+                here.invert_target(&destination).map_err(|_| Error::UnsupportedMultiLocationFormat)
+            };
+
+            let decode = |loc: &MultilocationEncoded| -> MultiLocation {
+                let &(parent, para_id, addr) = loc;
+    
+                let account = AccountId32 {
+                    network: None, // Is it ok?
+                    id: *addr.as_ref(),
+                };
+        
+                let interior = match para_id {
+                    Some(id) => X2(Parachain(id), account),
+                    None => X1(account),
+                };
+                MultiLocation::new(parent, interior)
+            };
+
+            let encode = |loc: MultiLocation| -> Result<MultilocationEncoded, Error> {
+                let parents = loc.parent_count();
+
+                let get_account = |jn| {
+                    match jn {
+                        AccountId32 {id, ..} =>  Ok(AccountId::from(id)),
+                        _ => Err(Error::UnsupportedMultiLocationFormat),
+                    }
+                };
+
+                let (para_id, acc) = match loc.interior() {
+                    X1(jn) => (None, get_account(*jn)?),
+                    X2(Parachain(id), jn) => (Some(*id), get_account(*jn)?),
+                    _ => Err(Error::UnsupportedMultiLocationFormat)?,
+                };
+
+                Ok((parents, para_id, acc))
+            };
+            
+            // 1. Retrieve context info of the origin
+            let context = get_context(origin_path);
+
+            // 2. Invert `here` w.r.t to origin path's context
+            let here = X1(Parachain(1));
+            let target = get_inverted_target(here, origin_path)?;
+
+            // 3. Convert MultilocationEncoded to MultiLocation
+            let mut loc_ml: MultiLocation = decode(loc);
+
+            // 4. Reanchor loc to our context `here`
+            loc_ml.reanchor(&target, context).unwrap();
+
+            // 5. Encode the anchored MultiLocation back to MultilocationEncoded format
+            let new_loc = encode(loc_ml)?;
+
+            Ok(new_loc)
         }
 
         // Gives us the control to have our own form of interchain account

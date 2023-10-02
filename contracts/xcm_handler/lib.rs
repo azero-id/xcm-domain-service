@@ -7,10 +7,10 @@ mod xcm_handler {
     use ink::storage::Mapping;
     use scale::Encode;
     use utils::make_xcm_contract_call;
+    use utils::MultilocationEncoded;
     use xcm::v3::prelude::*;
     use xcm::VersionedMultiLocation;
 
-    pub type MultilocationEncoded = (u8, Option<u32>, AccountId); // (Parent, Option<Parachain>, AccountId)
     pub type ReadInterfaceEncoded = Vec<u8>;
     pub type TicketId = u128;
 
@@ -95,11 +95,7 @@ mod xcm_handler {
             origin_path: MultilocationEncoded,
         ) -> Result<(), Error> {
             self.ensure_admin()?;
-
-            // check to ensure only supported Location types are added
-            Self::resolve_location(&origin_path)?;
             self.xc_contracts.insert(xc_contract_soac, &origin_path);
-
             Ok(())
         }
 
@@ -187,7 +183,8 @@ mod xcm_handler {
             tid: &TicketId,
             read_interface: &ReadInterface,
         ) -> Result<(), Error> {
-            let (path_to_chain, contract_address) = Self::resolve_location(&location)?;
+            let path_to_chain = location.path_to_chain();
+            let contract_address = location.account();
 
             let selector = ink::selector_bytes!("accept_response");
             let encoded_response: ReadInterfaceEncoded = read_interface.encode();
@@ -202,26 +199,13 @@ mod xcm_handler {
             .map_err(Into::into)
         }
 
-        fn resolve_location(
-            location: &MultilocationEncoded,
-        ) -> Result<(MultiLocation, AccountId), Error> {
-            let &(parents, para_id, contract_addr) = location;
-            let interior = match para_id {
-                Some(id) => X1(Parachain(id)),
-                None => Here,
-            };
-            let path_to_chain: MultiLocation = MultiLocation::new(parents, interior);
-
-            Ok((path_to_chain, contract_addr))
-        }
-
-        // Re-anchors from Here (context) to destination chain location (target)
+        // Re-anchors `loc` from Here (context) to destination chain location (target)
         fn reanchor_loc(
             &self,
             loc: &VersionedMultiLocation,
             relative_to: &MultilocationEncoded,
         ) -> Result<VersionedMultiLocation, Error> {
-            let (target, _) = Self::resolve_location(relative_to)?;
+            let target = relative_to.path_to_chain();
             let context = X1(Parachain(1));
 
             let Ok(mut loc): Result<MultiLocation, _> = loc.clone().try_into() else {
@@ -240,70 +224,29 @@ mod xcm_handler {
             loc: &MultilocationEncoded,
             origin_path: &MultilocationEncoded,
         ) -> Result<MultilocationEncoded, Error> {
-
-            let get_context = |loc: &MultilocationEncoded| -> InteriorMultiLocation {
-                let &(_, para_id, _) = loc;
-
-                match para_id {
-                    Some(id) => X1(Parachain(id)),
-                    None => Here,
-                }
+            let get_inverted_target = |here: Junctions, origin_path: &MultilocationEncoded| {
+                let destination = origin_path.path_to_chain();
+                here.invert_target(&destination)
+                    .map_err(|_| Error::UnsupportedMultiLocationFormat)
             };
 
-            let get_inverted_target = |here: Junctions, origin_path| {
-                let (destination, _) = Self::resolve_location(origin_path)?;
-                here.invert_target(&destination).map_err(|_| Error::UnsupportedMultiLocationFormat)
-            };
-
-            let decode = |loc: &MultilocationEncoded| -> MultiLocation {
-                let &(parent, para_id, addr) = loc;
-    
-                let account = AccountId32 {
-                    network: None, // Is it ok?
-                    id: *addr.as_ref(),
-                };
-        
-                let interior = match para_id {
-                    Some(id) => X2(Parachain(id), account),
-                    None => X1(account),
-                };
-                MultiLocation::new(parent, interior)
-            };
-
-            let encode = |loc: MultiLocation| -> Result<MultilocationEncoded, Error> {
-                let parents = loc.parent_count();
-
-                let get_account = |jn| {
-                    match jn {
-                        AccountId32 {id, ..} =>  Ok(AccountId::from(id)),
-                        _ => Err(Error::UnsupportedMultiLocationFormat),
-                    }
-                };
-
-                let (para_id, acc) = match loc.interior() {
-                    X1(jn) => (None, get_account(*jn)?),
-                    X2(Parachain(id), jn) => (Some(*id), get_account(*jn)?),
-                    _ => Err(Error::UnsupportedMultiLocationFormat)?,
-                };
-
-                Ok((parents, para_id, acc))
-            };
-            
             // 1. Retrieve context info of the origin
-            let context = get_context(origin_path);
+            let context = origin_path.get_context();
 
             // 2. Invert `here` w.r.t to origin path's context
             let here = X1(Parachain(1));
             let target = get_inverted_target(here, origin_path)?;
 
             // 3. Convert MultilocationEncoded to MultiLocation
-            let mut loc_ml: MultiLocation = decode(loc);
+            let mut loc_ml: MultiLocation = loc.into();
 
             // 4. Reanchor loc to our context `here`
             loc_ml.reanchor(&target, context).unwrap();
 
             // 5. Encode the anchored MultiLocation back to MultilocationEncoded format
-            let new_loc = encode(loc_ml)?;
+            let new_loc = loc_ml
+                .try_into()
+                .map_err(|_| Error::UnsupportedMultiLocationFormat)?;
 
             Ok(new_loc)
         }

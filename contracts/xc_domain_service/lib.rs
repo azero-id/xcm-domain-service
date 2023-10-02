@@ -7,6 +7,7 @@ mod xc_domain_service {
     use ink::storage::Mapping;
     use scale::{Decode, Encode};
     use utils::make_xcm_contract_call;
+    use utils::MultilocationEncoded;
     use xcm::v3::prelude::*;
 
     const PATH_TO_HOST_CHAIN: MultiLocation = MultiLocation {
@@ -21,7 +22,6 @@ mod xc_domain_service {
         Address(Option<xcm::VersionedMultiLocation>),
     }
 
-    pub type MultilocationEncoded = (u8, Option<u32>, AccountId); // (Parent, Option<Parachain>, AccountId)
     pub type ReadInterfaceEncoded = Vec<u8>;
     pub type TicketId = u128;
 

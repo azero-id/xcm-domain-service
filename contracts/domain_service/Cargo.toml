@@ -7,6 +7,7 @@ edition = "2021"
 [dependencies]
 ink = { version = "4.3.0", default-features = false }
 xcm = { package = "staging-xcm", git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
+utils = { path = "../utils", default-features = false}
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2.6", default-features = false, features = ["derive"], optional = true }
@@ -21,5 +22,6 @@ std = [
     "scale/std",
     "scale-info/std",
     "xcm/std",
+    "utils/std",
 ]
 ink-as-dependency = []

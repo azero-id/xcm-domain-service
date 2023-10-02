@@ -1,6 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+mod multilocation_encoded;
+
 pub use sp_weights::Weight;
+pub use multilocation_encoded::MultilocationEncoded;
 use ink::prelude::boxed::Box;
 use ink::prelude::{vec, vec::Vec};
 use ink::primitives::AccountId;

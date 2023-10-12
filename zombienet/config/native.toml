@@ -1,0 +1,59 @@
+[settings]
+timeout = 1000
+provider = "native"
+
+[relaychain]
+chain = "rococo-local"
+default_command = "./bin/polkadot-1.0.0"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+  ws_port = 9900
+  extra_args = [ "-lparachain=debug" ]
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+  extra_args = [ "-lparachain=debug" ]
+
+[[parachains]]
+id = 1
+chain = "local"
+cumulus_based = true
+add_to_genesis = true
+
+  [[parachains.collators]]
+  name = "paraA-collator"
+  command = "./bin/parachain-1.0.0"
+  ws_port = 9910
+  args = ["--log=xcm=trace,runtime::contracts=debug"]
+
+[[parachains]]
+id = 2
+chain = "local"
+cumulus_based = true
+add_to_genesis = true
+
+  [[parachains.collators]]
+  name = "paraB-collator"
+  command = "./bin/parachain-1.0.0"
+  ws_port = 9920
+  args = ["--log=xcm=trace,runtime::contracts=debug"]
+
+[types.Header]
+number = "u64"
+parent_hash = "Hash"
+post_state = "Hash"
+
+[[hrmp_channels]]
+sender = 1
+recipient = 2
+max_capacity = 8
+max_message_size = 10240
+
+[[hrmp_channels]]
+sender = 2
+recipient = 1
+max_capacity = 8
+max_message_size = 10240

@@ -14,7 +14,7 @@ pub mod runtime {}
 
 pub type ParachainClient = subxt::OnlineClient<subxt::SubstrateConfig>;
 
-pub const TX_GAS: sp_weights::Weight = sp_weights::Weight::from_parts(5_000_000_000, 100_000);
+pub const TX_GAS: sp_weights::Weight = sp_weights::Weight::from_parts(10_000_000_000, 200_000);
 
 fn get_selector(name: &str) -> [u8; 4] {
     let bytes = subxt::ext::sp_core::blake2_256(name.as_bytes());
@@ -182,7 +182,7 @@ async fn setup(para_a: &ParachainClient, para_b: &ParachainClient) -> Result<(Ac
     // 3A. Deploy `xc_domain_service: xc-contract`
     let xc_contract = deploy_xc_contract(para_b, &xcm_handler, &xcm_handler_soac).await?;
     let xc_contract_soac = sibling_account_account_id(2, &xc_contract);
-    println!("Xc-domain-service deployed on ParaA with Address: {:}", xcm_handler);
+    println!("Xc-domain-service deployed on ParaB with Address: {:}", xc_contract);
 
     // 3B. Approve xc_contract on xcm_handler
     let origin_path = (1, Some(2), xc_contract.clone());  // (parent, Option<ParaId>, AccountId)

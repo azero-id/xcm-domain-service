@@ -36,7 +36,7 @@ pub fn make_xcm_contract_call<C: ink::env::ContractEnv>(
     value: u128,
     gas_limit: Option<Weight>,
 ) -> Result<(), ink::env::Error> {
-    let gas_limit = gas_limit.unwrap_or(Weight::from_all(1_000_000_000_000));
+    let gas_limit = gas_limit.unwrap_or(Weight::from_parts(10_000_000_000, 200_000));
     // let est_wt = estimate_weight(4) + gas_limit * 2;
     // let fee = estimate_fee_for_weight(est_wt);
 
@@ -76,9 +76,9 @@ pub fn make_xcm_contract_call<C: ink::env::ContractEnv>(
 // @dev Make sure indexes are valid for chain in use!
 #[derive(scale::Encode)]
 pub enum RuntimeCall {
-    #[codec(index = 70)]
+    #[codec(index = 40)]
     Contracts(ContractsCall),
-    #[codec(index = 99)]
+    #[codec(index = 31)]
     Xcm(XcmCall),
 }
 

@@ -39,6 +39,16 @@ mod domain_service {
         /** Getters STARTS here */
 
         #[ink(message)]
+        pub fn get_admin(&self) -> AccountId {
+            self.admin
+        }
+
+        #[ink(message)]
+        pub fn get_handler(&self) -> AccountId {
+            self.handler
+        }
+
+        #[ink(message)]
         pub fn get_owner(&self, name: String) -> Option<AccountId> {
             self.name_to_owner.get(name)
         }

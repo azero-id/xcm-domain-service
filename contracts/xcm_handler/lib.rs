@@ -100,6 +100,22 @@ mod xcm_handler {
         }
 
         #[ink(message)]
+        pub fn get_admin(&self) -> AccountId {
+            self.admin
+        }
+
+        #[ink(message)]
+        pub fn get_xc_contract(&self, addr: AccountId) -> Option<MultilocationEncoded> {
+            self.xc_contracts.get(addr)
+        }
+
+        #[ink(message)]
+        pub fn get_state_manager(&self) -> AccountId {
+            use ink::ToAccountId;
+            self.domain_service.to_account_id()
+        }
+
+        #[ink(message)]
         pub fn get_owner(
             &mut self,
             tid: TicketId,

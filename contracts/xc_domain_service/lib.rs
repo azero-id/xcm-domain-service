@@ -73,6 +73,11 @@ mod xc_domain_service {
         }
 
         #[ink(message)]
+        pub fn get_handler_details(&self) -> (AccountId, AccountId) {
+            (self.xcm_handler, self.xcm_handler_soac)
+        }
+
+        #[ink(message)]
         pub fn get_ticket_count(&self) -> TicketId {
             self.ticket_count
         }

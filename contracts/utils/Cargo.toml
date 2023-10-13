@@ -15,6 +15,9 @@ scale-info = { version = "2.6", default-features = false, features = ["derive"],
 xcm = { package = "staging-xcm", git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
 sp-weights = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
 
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0", features = ["disable_panic_handler", "disable_oom", "disable_allocator"] }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
+
 [lib]
 path = "lib.rs"
 
@@ -26,4 +29,6 @@ std = [
     "scale-info/std",
     "xcm/std",
     "sp-weights/std",
+    "sp-io/std",
+    "sp-runtime/std",
 ]

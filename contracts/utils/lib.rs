@@ -41,7 +41,7 @@ pub fn make_xcm_contract_call<C: ink::env::ContractEnv>(
     // let fee = estimate_fee_for_weight(est_wt);
 
     let contract_call = RuntimeCall::Contracts(ContractsCall::Call {
-        dest: contract_address,
+        dest: contract_address.into(),
         value,
         gas_limit,
         storage_deposit_limit: None,
@@ -95,7 +95,7 @@ pub enum XcmCall {
 pub enum ContractsCall {
     #[codec(index = 6)]
     Call {
-        dest: AccountId,
+        dest: sp_runtime::MultiAddress<AccountId, ()>,
         #[codec(compact)]
         value: u128,
         gas_limit: crate::Weight,

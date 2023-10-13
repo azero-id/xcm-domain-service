@@ -390,7 +390,7 @@ mod tests {
 			assert_ok!(parachain::ForeignUniques::force_create(
 				parachain::RuntimeOrigin::root(),
 				(Parent, GeneralIndex(1)).into(),
-				ALICE,
+				ALICE.into(),
 				false,
 			));
 			assert_eq!(
@@ -460,7 +460,7 @@ mod tests {
 			assert_ok!(parachain::ForeignUniques::force_create(
 				parachain::RuntimeOrigin::root(),
 				(Parent, GeneralIndex(2)).into(),
-				ALICE,
+				ALICE.into(),
 				false,
 			));
 			assert_eq!(
@@ -531,7 +531,7 @@ mod tests {
 				call: parachain::RuntimeCall::from(
 					pallet_uniques::Call::<parachain::Runtime>::create {
 						collection: (Parent, 2u64).into(),
-						admin: parent_account_id(),
+						admin: parent_account_id().into(),
 					},
 				)
 				.encode()

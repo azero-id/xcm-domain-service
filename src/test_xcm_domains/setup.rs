@@ -60,7 +60,7 @@ pub fn add_xc_contract(
 pub fn fund_address(addr: &AccountId32) {
     assert_ok!(ParachainBalances::force_set_balance(
         parachain::RuntimeOrigin::root(),
-        addr.clone(),
+        addr.clone().into(),
         INITIAL_BALANCE
     ));
 }

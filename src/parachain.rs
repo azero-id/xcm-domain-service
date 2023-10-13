@@ -27,7 +27,7 @@ use frame_support::{
 use frame_system::EnsureRoot;
 use sp_core::{ConstU32, H256};
 use sp_runtime::{
-	traits::{Get, Hash, IdentityLookup},
+	traits::{Get, Hash, AccountIdLookup},
 	AccountId32,
 };
 use sp_std::prelude::*;
@@ -70,7 +70,7 @@ impl frame_system::Config for Runtime {
 	type Hash = H256;
 	type Hashing = ::sp_runtime::traits::BlakeTwo256;
 	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
+	type Lookup = AccountIdLookup<Self::AccountId, ()>;
 	type Block = Block;
 	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = BlockHashCount;

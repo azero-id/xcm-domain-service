@@ -76,15 +76,17 @@ mod xcm_handler {
         admin: AccountId,
         domain_service: ink::contract_ref!(DomainService),
         xc_contracts: Mapping<AccountId, MultilocationEncoded>,
+        custom_weight: Option<(u64, u64)>,
     }
 
     impl XcmHandler {
         #[ink(constructor)]
-        pub fn new(admin: AccountId, domain_service_addr: AccountId) -> Self {
+        pub fn new(admin: AccountId, domain_service_addr: AccountId, custom_weight: Option<(u64, u64)>) -> Self {
             Self {
                 admin,
                 domain_service: domain_service_addr.into(),
                 xc_contracts: Mapping::default(),
+                custom_weight,
             }
         }
 
@@ -125,7 +127,7 @@ mod xcm_handler {
 
             let output = self.domain_service.get_owner(name);
             let read_interface = ReadInterface::Owner(output);
-            Self::send_response_back(&origin_path, &tid, &read_interface)?;
+            self.send_response_back(&origin_path, &tid, &read_interface)?;
 
             Ok(output)
         }
@@ -146,7 +148,7 @@ mod xcm_handler {
             };
 
             let read_interface = ReadInterface::Address(re_anchored_loc);
-            Self::send_response_back(&origin_path, &tid, &read_interface)?;
+            self.send_response_back(&origin_path, &tid, &read_interface)?;
 
             Ok(output)
         }
@@ -195,6 +197,7 @@ mod xcm_handler {
         }
 
         fn send_response_back(
+            &mut self,
             location: &MultilocationEncoded,
             tid: &TicketId,
             read_interface: &ReadInterface,
@@ -205,12 +208,14 @@ mod xcm_handler {
             let selector = ink::selector_bytes!("accept_response");
             let encoded_response: ReadInterfaceEncoded = read_interface.encode();
 
+            let wt = self.custom_weight.map(|(x,y)| utils::Weight::from_parts(x,y));
+
             make_xcm_contract_call::<Self>(
                 path_to_chain.into(),
                 contract_address,
                 (selector, tid, encoded_response).encode(),
                 0,
-                None,
+                wt,
             )
             .map_err(Into::into)
         }

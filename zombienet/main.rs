@@ -15,6 +15,7 @@ pub mod runtime {}
 pub type ParachainClient = subxt::OnlineClient<subxt::SubstrateConfig>;
 
 pub const TX_GAS: sp_weights::Weight = sp_weights::Weight::from_parts(10_000_000_000, 200_000);
+pub const CUSTOM_WT: Option<(u64, u64)> = Some((10_000_000_000, 130_000));
 
 fn get_selector(name: &str) -> [u8; 4] {
     let bytes = subxt::ext::sp_core::blake2_256(name.as_bytes());
@@ -113,7 +114,7 @@ async fn deploy_xcm_handler(
     let code = std::fs::read("./artefacts/xcm_handler.wasm").expect("cound not find wasm blob");
 
     let sel_constructor = get_selector("new");
-    let payload = (sel_constructor, admin, state_manager).encode(); // (selector, admin, state_manager)
+    let payload = (sel_constructor, admin, state_manager, CUSTOM_WT).encode(); // (selector, admin, state_manager, custom_wt)
 
     deploy_contract(client, code, payload, dev::alice()).await
 }
@@ -127,7 +128,7 @@ async fn deploy_xc_contract(
         std::fs::read("./artefacts/xc_domain_service.wasm").expect("cound not find wasm blob");
 
     let sel_constructor = get_selector("new");
-    let payload = (sel_constructor, xcm_handler, xcm_handler_soac).encode(); // (selector, xcm_handler, xcm_handler_soac)
+    let payload = (sel_constructor, xcm_handler, xcm_handler_soac, CUSTOM_WT).encode(); // (selector, xcm_handler, xcm_handler_soac, custom_wt)
 
     deploy_contract(client, code, payload, dev::alice()).await
 }

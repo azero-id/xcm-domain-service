@@ -59,16 +59,22 @@ mod xc_domain_service {
         xcm_handler_soac: AccountId, // Try computing it on-chain
         ticket_count: TicketId,
         ticket_to_response: Mapping<TicketId, ReadInterfaceEncoded>,
+        custom_weight: Option<(u64, u64)>,
     }
 
     impl XcDomainService {
         #[ink(constructor)]
-        pub fn new(xcm_handler: AccountId, xcm_handler_soac: AccountId) -> Self {
+        pub fn new(
+            xcm_handler: AccountId, 
+            xcm_handler_soac: AccountId,
+            custom_weight: Option<(u64, u64)>,
+        ) -> Self {
             Self {
                 xcm_handler,
                 xcm_handler_soac,
                 ticket_count: 0,
                 ticket_to_response: Mapping::default(),
+                custom_weight,
             }
         }
 
@@ -214,12 +220,14 @@ mod xc_domain_service {
         }
 
         fn call_handler(&mut self, payload: Vec<u8>) -> Result<(), Error> {
+            let wt = self.custom_weight.map(|(x,y)| utils::Weight::from_parts(x,y));
+            
             make_xcm_contract_call::<Self>(
                 PATH_TO_HOST_CHAIN.into(),
                 self.xcm_handler,
                 payload,
                 0,
-                None,
+                wt,
             )
             .map_err(Into::into)
         }

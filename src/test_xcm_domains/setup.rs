@@ -15,7 +15,8 @@ fn deploy_xcm_handler(admin: &AccountId32, state_manager: &AccountId32) -> Accou
         .expect("cound not find wasm blob");
 
     let sel_constructor = get_selector("new");
-    let payload = (sel_constructor, admin, state_manager).encode(); // (selector, admin, state_manager)
+    let custom_wt: Option<(u64, u64)> = None;
+    let payload = (sel_constructor, admin, state_manager, custom_wt).encode(); // (selector, admin, state_manager, custom_wt)
 
     deploy_contract(blob, payload, ALICE)
 }
@@ -28,7 +29,8 @@ pub fn deploy_xc_contract(
         .expect("cound not find wasm blob");
 
     let sel_constructor = get_selector("new");
-    let payload = (sel_constructor, xcm_handler, xcm_handler_soac).encode(); // (selector, xcm_handler, xcm_handler_soac)
+    let custom_wt: Option<(u64, u64)> = None;
+    let payload = (sel_constructor, xcm_handler, xcm_handler_soac, custom_wt).encode(); // (selector, xcm_handler, xcm_handler_soac, custom_wt)
 
     deploy_contract(blob, payload, ALICE)
 }

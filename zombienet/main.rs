@@ -21,9 +21,21 @@ fn get_selector(name: &str) -> [u8; 4] {
     [bytes[0], bytes[1], bytes[2], bytes[3]]
 }
 
-fn sibling_account_account_id(_para: u32, who: &AccountId32) -> AccountId32 {
-    // ("multiloc", location).using_encoded(blake2_256).into()
-    who.clone()
+fn sibling_account_account_id(para: u32, who: &AccountId32) -> AccountId32 {
+    let location: xcm::v3::MultiLocation = (
+        xcm::v3::Parent,
+        xcm::v3::prelude::Parachain(para),
+        xcm::v3::prelude::AccountId32 {
+            network: None, // Ensure network matches the runtime
+            id: who.0,
+        },
+    )
+    .into();
+
+    // based on Account32Hash<(), AccountId>
+    ("multiloc", location)
+        .using_encoded(subxt::ext::sp_core::blake2_256)
+        .into()
 }
 
 async fn deploy_contract(
@@ -190,6 +202,7 @@ async fn setup(para_a: &ParachainClient, para_b: &ParachainClient) -> Result<(Ac
     println!("ParaB's xc-domain-service approved with the Xcm-handler");
 
     // 4. Fund sovereign accounts for gas fee payment
+    println!("Funding sovereign accounts...");
     fund_address(para_a, &xc_contract_soac).await?;
     fund_address(para_b, &xcm_handler_soac).await?;
 

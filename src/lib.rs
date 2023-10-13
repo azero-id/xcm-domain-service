@@ -86,7 +86,7 @@ pub fn child_account_account_id(para: u32, who: sp_runtime::AccountId32) -> rela
 }
 
 pub fn sibling_account_account_id(para: u32, who: sp_runtime::AccountId32) -> parachain::AccountId {
-	let location = (Parent, Parachain(para), AccountId32 { network: Some(Kusama), id: who.into() });
+	let location = (Parent, Parachain(para), AccountId32 { network: parachain::RelayNetwork::get(), id: who.into() });
 	parachain::LocationToAccountId::convert_location(&location.into()).unwrap()
 }
 

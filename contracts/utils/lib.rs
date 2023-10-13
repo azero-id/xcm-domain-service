@@ -36,7 +36,8 @@ pub fn make_xcm_contract_call<C: ink::env::ContractEnv>(
     value: u128,
     gas_limit: Option<Weight>,
 ) -> Result<(), ink::env::Error> {
-    let gas_limit = gas_limit.unwrap_or(Weight::from_parts(10_000_000_000, 200_000));
+    let gas_limit = gas_limit.unwrap_or(Weight::from_parts(10_000_000_000, 150_000));
+    let additional_gas = Weight::from_parts(1_000_000_000, 10_000);
     // let est_wt = estimate_weight(4) + gas_limit * 2;
     // let fee = estimate_fee_for_weight(est_wt);
 
@@ -60,7 +61,7 @@ pub fn make_xcm_contract_call<C: ink::env::ContractEnv>(
         },
         Transact {
             origin_kind: OriginKind::SovereignAccount,
-            require_weight_at_most: gas_limit * 2,
+            require_weight_at_most: gas_limit + additional_gas,
             call: scale::Encode::encode(&contract_call).into(),
         },
     ]);

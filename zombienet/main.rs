@@ -15,7 +15,7 @@ pub mod runtime {}
 pub type ParachainClient = subxt::OnlineClient<subxt::SubstrateConfig>;
 
 pub const TX_GAS: sp_weights::Weight = sp_weights::Weight::from_parts(10_000_000_000, 200_000);
-pub const CUSTOM_WT: Option<(u64, u64)> = Some((10_000_000_000, 130_000));
+pub const CUSTOM_WT: Option<(u64, u64)> = Some((11_000_000_000, 140_000));  // Update this if Xcm.success but no Contract.Called event
 
 fn get_selector(name: &str) -> [u8; 4] {
     let bytes = subxt::ext::sp_core::blake2_256(name.as_bytes());
@@ -160,7 +160,7 @@ async fn fund_address(
     client: &ParachainClient,
     addr: &AccountId32,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let balance_transfer_tx = runtime::tx().balances().transfer_allow_death(addr.clone().into(), 1_000_000_000_000);
+    let balance_transfer_tx = runtime::tx().balances().transfer_allow_death(addr.clone().into(), 100_000_000_000_000);
 
     let from = dev::alice();
 
@@ -203,8 +203,10 @@ async fn setup(para_a: &ParachainClient, para_b: &ParachainClient) -> Result<(Ac
     println!("ParaB's xc-domain-service approved with the Xcm-handler");
 
     // 4. Fund sovereign accounts for gas fee payment
-    println!("Funding sovereign accounts...");
+    println!("Funding sovereign account: xc_contract_soac({:})", xc_contract_soac);
     fund_address(para_a, &xc_contract_soac).await?;
+
+    println!("Funding sovereign account: xcm_handler_soac({:})", xcm_handler_soac);
     fund_address(para_b, &xcm_handler_soac).await?;
 
     Ok((state_manager, xcm_handler, xc_contract))

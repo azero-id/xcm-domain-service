@@ -136,7 +136,45 @@ async fn setup(
     Ok((state_manager, xcm_handler, xc_contract))
 }
 
-async fn run() -> Result<(), Box<dyn std::error::Error>> {
+async fn run(
+    para_a: &ParachainClient,
+    para_b: &ParachainClient,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Setup the xcm-domain contracts
+    setup(para_a, para_b).await?;
+
+    // Fund Alice
+    fund_user(para_a, para_b, &dev::alice().public_key().into()).await?;
+
+    Ok(())
+}
+
+async fn fund_users(
+    para_a: &ParachainClient,
+    para_b: &ParachainClient,
+    users: &[String],
+) -> Result<(), Box<dyn std::error::Error>> {
+    use std::str::FromStr;
+    let users: Vec<AccountId32> = users
+        .iter()
+        .map(|user| AccountId32::from_str(user).expect("Invalid address!"))
+        .collect();
+
+    if users.is_empty() {
+        panic!("No address sent");
+    }
+
+    for user in users {
+        fund_user(para_a, para_b, &user).await?;
+    }
+
+    Ok(())
+}
+
+#[tokio::main]
+pub async fn main() {
+    let args: Vec<String> = std::env::args().collect();
+
     let para_a = subxt::OnlineClient::<subxt::SubstrateConfig>::from_url("ws://127.0.0.1:9910")
         .await
         .unwrap();
@@ -145,14 +183,13 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    setup(&para_a, &para_b).await?;
+    let res = match args.get(1) {
+        None => run(&para_a, &para_b).await,
+        Some(cmd) if cmd == "fund" => fund_users(&para_a, &para_b, &args[2..]).await,
+        Some(cmd) => panic!("Unrecognised cmd: {}", cmd),
+    };
 
-    Ok(())
-}
-
-#[tokio::main]
-pub async fn main() {
-    if let Err(err) = run().await {
+    if let Err(err) = res {
         eprintln!("{err}");
     }
 }

@@ -4,7 +4,7 @@ provider = "native"
 
 [relaychain]
 chain = "rococo-local"
-default_command = "./bin/polkadot-1.0.0"
+default_command = "./bin/polkadot"
 
   [[relaychain.nodes]]
   name = "alice"
@@ -17,6 +17,11 @@ default_command = "./bin/polkadot-1.0.0"
   validator = true
   extra_args = [ "-lparachain=debug" ]
 
+  [[relaychain.nodes]]
+  name = "charlie"
+  validator = true
+  extra_args = [ "-lparachain=debug" ]
+
 [[parachains]]
 id = 1
 chain = "local"
@@ -25,7 +30,7 @@ add_to_genesis = true
 
   [[parachains.collators]]
   name = "paraA-collator"
-  command = "./bin/parachain-1.0.0"
+  command = "./bin/parachain"
   ws_port = 9910
   args = ["--log=xcm=trace,runtime::contracts=debug"]
 
@@ -37,7 +42,7 @@ add_to_genesis = true
 
   [[parachains.collators]]
   name = "paraB-collator"
-  command = "./bin/parachain-1.0.0"
+  command = "./bin/parachain"
   ws_port = 9920
   args = ["--log=xcm=trace,runtime::contracts=debug"]
 

@@ -78,6 +78,7 @@ mod xc_domain_service {
             }
         }
 
+        /// Returns (xcm-handler, xcm-handler-soac) addresses
         #[ink(message)]
         pub fn get_handler_details(&self) -> (AccountId, AccountId) {
             (self.xcm_handler, self.xcm_handler_soac)
@@ -90,6 +91,9 @@ mod xc_domain_service {
 
         /** Async getters STARTS here */
 
+        /// Requests for the owner details of the given name.
+        /// Returns `TicketId` for the request. 
+        /// Use this `TicketId` with `retrieve_owner` to get the details.
         #[ink(message)]
         pub fn get_owner(&mut self, name: String) -> Result<TicketId, Error> {
             let tid = self.ticket_count;
@@ -102,6 +106,9 @@ mod xc_domain_service {
             Ok(tid)
         }
 
+        /// Requests for the resolving address details of the given name.
+        /// Returns `TicketId` for the request. 
+        /// Use this `TicketId` with `retrieve_address` to get the details.
         #[ink(message)]
         pub fn get_address(&mut self, name: String) -> Result<TicketId, Error> {
             let tid = self.ticket_count;
@@ -118,6 +125,7 @@ mod xc_domain_service {
 
         /** Getters request fulfill STARTS here */
 
+        /// Get the owner details associated with the TicketId (if valid)
         #[ink(message)]
         pub fn retrieve_owner(&self, tid: TicketId) -> Result<Option<AccountId>, Error> {
             match self.read_response(tid)? {
@@ -126,6 +134,7 @@ mod xc_domain_service {
             }
         }
 
+        /// Get the address details associated with the TicketId (if valid)
         #[ink(message)]
         pub fn retrieve_address(
             &self,
@@ -137,6 +146,7 @@ mod xc_domain_service {
             }
         }
 
+        /// Returns whole response associated with the tid (if valid)
         #[ink(message)]
         pub fn read_response(&self, tid: TicketId) -> Result<ReadInterface, Error> {
             if tid >= self.ticket_count {
@@ -149,6 +159,7 @@ mod xc_domain_service {
             ReadInterface::decode(&mut &response[..]).map_err(|_| Error::FailedToDecodeResponse)
         }
 
+        /// Returns the response associated with the tid in encoded format
         #[ink(message)]
         pub fn read_raw_response(&self, tid: TicketId) -> Option<ReadInterfaceEncoded> {
             self.ticket_to_response.get(tid)
@@ -158,8 +169,8 @@ mod xc_domain_service {
 
         /** Async setters STARTS here */
 
-        // @note For simplicity, Assumption is made that the name will be successfully registered
-        // and therefore refund case is not handled here!
+        /// @note For simplicity, Assumption is made that the name will be successfully registered
+        /// and therefore refund case is not handled here!
         #[ink(message, payable)]
         pub fn register_name(&mut self, name: String) -> Result<(), Error> {
             if self.env().transferred_value() < 80 {
@@ -182,6 +193,7 @@ mod xc_domain_service {
             self.call_handler(payload)
         }
 
+        /// Allow setting the resolving address in `MultiLocation` format
         #[ink(message)]
         pub fn set_address(
             &mut self,
@@ -197,6 +209,7 @@ mod xc_domain_service {
 
         /** Async setters ENDS here */
 
+        /// For xcm-handler response only!
         #[ink(message)]
         pub fn accept_response(
             &mut self,

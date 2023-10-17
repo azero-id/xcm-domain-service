@@ -43,6 +43,7 @@ mod domain_service {
             self.admin
         }
 
+        /// Returns the xcm-handler address
         #[ink(message)]
         pub fn get_handler(&self) -> AccountId {
             self.handler
@@ -91,12 +92,14 @@ mod domain_service {
 
         /** Setters for XCM calls STARTS here */
 
+        /// For xcm-handler use only!
         #[ink(message)]
         pub fn xcm_register_name(&mut self, caller: AccountId, name: String) -> Result<(), Error> {
             self.ensure_handler()?;
             self.do_register_name(&caller, &name)
         }
 
+        /// For xcm-handler use only!
         #[ink(message)]
         pub fn xcm_transfer_name(
             &mut self,
@@ -108,6 +111,7 @@ mod domain_service {
             self.do_transfer_name(&caller, &name, &receiver)
         }
 
+        /// For xcm-handler use only!
         #[ink(message)]
         pub fn xcm_set_address(
             &mut self,
@@ -123,6 +127,7 @@ mod domain_service {
 
         /** Privileged messages STARTS here */
 
+        /// ADMIN use only! Allows updating the xcm-handler address
         #[ink(message)]
         pub fn set_handler(&mut self, new_handler: AccountId) -> Result<(), Error> {
             self.ensure_admin()?;

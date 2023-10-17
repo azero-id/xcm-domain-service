@@ -1,4 +1,10 @@
-# Setup
+Spawn a local network using Zombienet and try out our XCM domain service.
+
+# Prerequisites
+
+You have configured your environment for Substrate development by installing [Rust and the Rust toolchain](https://docs.substrate.io/install/).
+
+# Setup instructions
 
 1. Make the bash script - `zombienet.sh` executable.
 
@@ -55,3 +61,11 @@ Open two `contracts-ui` page on your preferred browser, one for each chain. Use 
 Click on `Add New Contract` and choose the `Use On-chain Contract Address` method. Add the contracts on the respective `Contracts-UI` page. It will ask for the metadata which you can find in the [artefacts](./artefacts/) folder.
 
 > **INFO:** You can skip this step for `Xcm-handler` contract.
+
+## Faucet - Fund your account
+
+You will need funds in your account for domain purchases/gas payment if not using pre-funded accounts like ALICE. Run the following command that will transfer 100 units of token to the specified addresses:
+
+```cmd
+cargo run -- fund <space-separated addresses>
+```

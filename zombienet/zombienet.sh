@@ -22,9 +22,8 @@ build_polkadot(){
   CWD=$(pwd)
   mkdir -p bin
   pushd /tmp
-    git clone https://github.com/paritytech/polkadot.git
+    git clone --depth 1 https://github.com/paritytech/polkadot.git --branch $POLKADOT_V
     pushd polkadot
-      git checkout $POLKADOT_V
       echo "building polkadot executable..."
       cargo build --release --features fast-runtime
       cp target/release/polkadot $CWD/bin

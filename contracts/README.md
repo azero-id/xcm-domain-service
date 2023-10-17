@@ -2,4 +2,4 @@ There are 3 contracts provided, namely - [domain_service](./domain_service/), [x
 
 # Architecture
 
-![architecture](./Architecture.png)
+![architecture](../Architecture.png)

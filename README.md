@@ -100,6 +100,21 @@ Click on `Add New Contract` and choose the `Use On-chain Contract Address` metho
 > [!NOTE]  
 > You can skip this step for `Xcm-handler` contract.
 
+Below you will find a sample order of interaction via `xc_domain_service`:
+
+1. **`register_name(name)`**: Register a domain. (may fail if name is already claimed, refund not handled for simplicity).
+2. **`get_owner(name) -> TicketId`**: Request for the owner details of the given name.
+3. **`retrieve_owner(ticket_id)`**: Get the owner details associated with the TicketId (if valid).
+
+4. **`set_address(name, multi_location)`**: Set the resolving address in `MultiLocation` format for the given `name`.
+5. **`get_address(name) -> TicketId`**: Request for the resolving address details of the given name.
+6. **`retrieve_address(ticket_id)`**: Get the address details associated with the TicketId (if valid).
+
+7. **`transfer_name(name, to)`**: Transfer domain ownership
+
+> [!NOTE]  
+> For more details refer to the inline documentation available for each contract message.
+
 ### Fund your account via Faucet
 
 You will need funds in your account for domain registration & gas fees, if not using pre-funded accounts like `//Alice`. Run the following command that will transfer 100 token units to the specified addresses:

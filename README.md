@@ -2,6 +2,8 @@
 
 This repository contains a working PoC of a cross-parachain domain name service consisting of multiple XCM-enabled ink! smart contracts. It's part of the delivery for our [W3F Grant](https://github.com/w3f/Grants-Program/pull/1733) ([M1 Delivery](https://github.com/w3f/Grant-Milestone-Delivery/pull/951), [M2 Delivery](https://github.com/w3f/Grant-Milestone-Delivery/pull/1030)).
 
+The PoC domain name service implementation is a registry mapping between domain names, owning, and resolving addresses. Find a detailed [contract walkthrough](#7-interact-with-the-contracts) below and also check the inline ink! documentation for each function.
+
 ---
 
 1. [Architecture](#architecture)
@@ -88,9 +90,17 @@ This will deploy the following contracts:
 > [!NOTE]  
 > It can take some time (around 2-4 minutes) to complete the deployment.
 
-#### 6. Interacting with the contracts
+#### 6. Fund your account(s)
 
-Open two `contracts-ui` page on your preferred browser, one for each chain. Use the following links:
+You will need funds in your account for the domain registration and gas fees, if not using pre-funded accounts like `//Alice`. Run the following command that will transfer 100 token units to the specified addresses:
+
+```cmd
+cargo run -- fund <space-separated addresses>
+```
+
+#### 7. Interact with the contracts
+
+Open two `contracts-ui` pages on your preferred browser, one for each chain. Use the following links:
 
 - [Contracts-UI](https://contracts-ui.substrate.io/?rpc=ws://127.0.0.1:9910) for Parachain #1
 - [Contracts-UI](https://contracts-ui.substrate.io/?rpc=ws://127.0.0.1:9920) for Parachain #2
@@ -100,28 +110,20 @@ Click on `Add New Contract` and choose the `Use On-chain Contract Address` metho
 > [!NOTE]  
 > You can skip this step for `Xcm-handler` contract.
 
-Below you will find a sample order of interaction via `xc_domain_service`:
+Below you will find a sample order of interaction via `xc_domain_service` (Parachain #2):
 
-1. **`register_name(name)`**: Register a domain. (may fail if name is already claimed, refund not handled for simplicity).
-2. **`get_owner(name) -> TicketId`**: Request for the owner details of the given name.
-3. **`retrieve_owner(ticket_id)`**: Get the owner details associated with the TicketId (if valid).
-
+1. **`register_name(name)`**: Register a domain. (fails if name is already claimed, refund not handled for simplicity).
+2. **`get_owner(name) -> TicketId`**: Request for the owner address of the given name.
+3. **`retrieve_owner(ticket_id)`**: Get the owner details associated with the `ticketId` (if valid).
 4. **`set_address(name, multi_location)`**: Set the resolving address in `MultiLocation` format for the given `name`.
 5. **`get_address(name) -> TicketId`**: Request for the resolving address details of the given name.
 6. **`retrieve_address(ticket_id)`**: Get the address details associated with the TicketId (if valid).
-
 7. **`transfer_name(name, to)`**: Transfer domain ownership
+
+Alternatively, you can also interact with `Domain-service` on Parachain #1 directly (e.g. for double checking that the state changed consistently across chains).
 
 > [!NOTE]  
 > For more details refer to the inline documentation available for each contract message.
-
-### Fund your account via Faucet
-
-You will need funds in your account for domain registration & gas fees, if not using pre-funded accounts like `//Alice`. Run the following command that will transfer 100 token units to the specified addresses:
-
-```cmd
-cargo run -- fund <space-separated addresses>
-```
 
 ## Unit tests via `xcm-simulator`
 
